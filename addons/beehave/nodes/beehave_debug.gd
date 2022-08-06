@@ -2,11 +2,9 @@ extends BeehaveNode
 
 class_name BeehaveDebug, "../icons/tree.svg"
 
-export(NodePath) var beehave_tree
-onready var _behave_tree := get_node(beehave_tree)
-export(BeehaveRoot.PROCESS_MODE) var tree_process_mode := BeehaveRoot.PROCESS_MODE.MANUAL
+export(NodePath) var _beehave_tree
+var beehave_tree : BeehaveRoot setget set_beehave_tree
 
-export(Color) var enabled_color := Color.transparent
 export(Color) var tick_color := Color.whitesmoke
 export(Color) var success_color := Color.forestgreen
 export(Color) var running_color := Color.royalblue
@@ -18,6 +16,26 @@ onready var root
 var tree_map := {}
 
 func _ready():
+	if self._beehave_tree:
+		self.beehave_tree = get_node(self._beehave_tree)
+	
+func set_beehave_tree(value):
+	if beehave_tree != value:
+		if self.beehave_tree:
+			self.beehave_tree.disconnect("tick_start", self, "_tree_tick_start")
+		
+		beehave_tree = value
+		generate_tree()
+	
+func generate_tree():
+	if self.tree:
+		remove_child(self.tree)
+		
+	for node in self.tree_map.keys():
+		node.disconnect("tick_start", self, "_tick_start")
+		node.disconnect("tick_end", self, "_tick_end")
+	
+	self.tree_map = {}
 	self.tree = Tree.new()
 	self.tree.anchor_left = 0
 	self.tree.anchor_right = 1
@@ -27,29 +45,47 @@ func _ready():
 	self.tree.hide_folding = true
 	add_child(self.tree)
 	
-	_behave_tree.process_mode = tree_process_mode
-	_behave_tree.connect("tick_start", self, "_tree_tick_start")
+	self.beehave_tree.connect("tick_start", self, "_tree_tick_start")
 	self.root = self.tree.create_item()
-	_add_children(self.root, _behave_tree)
+	_add_children(self.root, self.beehave_tree)
 	
-func _input(event):
-	if event.is_action_pressed("tick"):
-		self._behave_tree.tick(1.0 / Engine.iterations_per_second)
-
 func _add_children(item, node):
 	tree_map[node] = item
 	item.set_text(0, node.name)
-	node.connect("tick_start", self, "_tick_start")
-	node.connect("tick_end", self, "_tick_end")
+	var icon
+	if node is BeehaveRoot:
+		icon = preload("../icons/tree.svg")
+	elif node is SelectorComposite or node is SelectorStarComposite:
+		icon = preload("../icons/selector.svg")
+	elif node is SequenceComposite or node is SequenceStarComposite:
+		icon = preload("../icons/sequencer.svg")
+	elif node is InverterDecorator:
+		icon = preload("../icons/inverter.svg")
+	elif node is ConditionLeaf:
+		icon = preload("../icons/condition.svg")
+	elif node is ActionLeaf:
+		icon = preload("../icons/action.svg")
+		
+	if icon:
+		item.set_icon(0, icon)
+	
+	if not node.is_connected("tick_start", self, "_tick_start"):
+		node.connect("tick_start", self, "_tick_start")
+	if not node.is_connected("tick_end", self, "_tick_end"):
+		node.connect("tick_end", self, "_tick_end")
 	
 	for c in node.get_children():
 		var i = self.tree.create_item(item)
 		self._add_children(i, c)
-		
+
+func _input(event):
+	if self.beehave_tree and event.is_action_pressed("tick"):
+		self.beehave_tree.tick(1.0 / Engine.iterations_per_second)
+	
 func _tree_tick_start(node):
 	for node in tree_map.keys():
 		var item = tree_map[node]
-		item.set_custom_bg_color(0, Color.transparent)
+		item.clear_custom_bg_color(0)
 
 func _tick_start(node):
 	var item = tree_map[node]
