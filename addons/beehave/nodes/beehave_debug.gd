@@ -5,6 +5,7 @@ class_name BeehaveDebug, "../icons/tree.svg"
 export(NodePath) var _beehave_tree
 var beehave_tree : BeehaveRoot setget set_beehave_tree
 
+export(Theme) var theme
 export(Color) var tick_color := Color.whitesmoke
 export(Color) var success_color := Color.forestgreen
 export(Color) var running_color := Color.royalblue
@@ -39,7 +40,7 @@ func generate_tree():
 
 	self.beehave_tree.connect("tick_start", self, "_tree_tick_start")
 	_add_children(self.tree.create_item(), self.beehave_tree)
-	
+
 func _create_tree():
 	var tree := Tree.new()
 	tree.anchor_left = 0
@@ -47,28 +48,16 @@ func _create_tree():
 	tree.anchor_top = 0
 	tree.anchor_bottom = 1
 	tree.hide_folding = true
-	
+	if self.theme:
+		tree.theme = self.theme
+
 	return tree
 
 func _add_children(item, node):
 	tree_map[node] = item
 	item.set_text(0, node.name)
-	var icon
-	if node is BeehaveRoot:
-		icon = preload("../icons/tree.svg")
-	elif node is SelectorComposite or node is SelectorStarComposite:
-		icon = preload("../icons/selector.svg")
-	elif node is SequenceComposite or node is SequenceStarComposite:
-		icon = preload("../icons/sequencer.svg")
-	elif node is InverterDecorator:
-		icon = preload("../icons/inverter.svg")
-	elif node is ConditionLeaf:
-		icon = preload("../icons/condition.svg")
-	elif node is ActionLeaf:
-		icon = preload("../icons/action.svg")
 
-	if icon:
-		item.set_icon(0, icon)
+	item.set_icon(0, self._get_icon(node))
 
 	if not node.is_connected("tick_start", self, "_tick_start"):
 		node.connect("tick_start", self, "_tick_start")
@@ -76,8 +65,36 @@ func _add_children(item, node):
 		node.connect("tick_end", self, "_tick_end")
 
 	for c in node.get_children():
-		var i = self.tree.create_item(item)
-		self._add_children(i, c)
+		if c is BeehaveTree:
+			var i = self.tree.create_item(item)
+			self._add_children(i, c)
+
+func _get_icon(node):
+	var icon
+	if node is BeehaveRoot:
+		icon = preload("../icons/tree.svg")
+	elif node is Composite:
+		if node is SelectorComposite:
+			icon = preload("../icons/selector.svg")
+		elif node is SelectorStarComposite:
+			icon = preload("../icons/selector.svg")
+		elif node is SequenceComposite:
+			icon = preload("../icons/sequencer.svg")
+		elif node is SequenceStarComposite:
+			icon = preload("../icons/sequencer.svg")
+		else:
+			icon = preload("../icons/category_composite.svg")
+	elif node is Decorator:
+		if node is InverterDecorator:
+			icon = preload("../icons/inverter.svg")
+		else:
+			icon = preload("../icons/category_decorator.svg")
+	elif node is ActionLeaf:
+		icon = preload("../icons/action.svg")
+	elif node is ConditionLeaf:
+		icon = preload("../icons/condition.svg")
+
+	return icon
 
 func _input(event):
 	if self.beehave_tree and event.is_action_pressed("tick"):
