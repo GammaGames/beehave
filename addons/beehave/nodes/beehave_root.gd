@@ -37,15 +37,15 @@ func _ready():
 
 func _process(delta):
 	tick(delta)
-  
+
 func _physics_process(delta):
 	tick(delta)
 
 func tick(delta):
 	blackboard.set("delta", delta)
 
-	var status = self.get_child(0).tick(actor, blackboard)
-	
+	var status = self.get_child(0)._tick(actor, blackboard)
+
 	if status != RUNNING:
 		blackboard.set("running_action", null)
 

@@ -5,7 +5,7 @@ class_name InverterDecorator, "../../icons/inverter.svg"
 
 func tick(action, blackboard):
 	for c in get_children():
-		var response = c.tick(action, blackboard)
+		var response = c._tick(action, blackboard)
 
 		if response == SUCCESS:
 			return FAILURE

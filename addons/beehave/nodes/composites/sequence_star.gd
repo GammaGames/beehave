@@ -12,7 +12,7 @@ func tick(actor, blackboard):
 		if c.get_index() < successful_index:
 			continue
 
-		var response = c.tick(actor, blackboard)
+		var response = c._tick(actor, blackboard)
 
 		if c is ConditionLeaf:
 			blackboard.set("last_condition", c)
