@@ -14,7 +14,6 @@ enum ProcessMode {
 }
 
 export (ProcessMode) var process_mode = ProcessMode.PHYSICS_PROCESS setget set_process_mode
-export (bool) var enabled = true
 
 export (NodePath) var actor_node_path
 
