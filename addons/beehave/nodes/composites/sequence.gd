@@ -4,7 +4,7 @@ class_name SequenceComposite, "../../icons/sequencer.svg"
 
 func tick(actor, blackboard):
 	for c in get_children():
-		var response = c._tick(actor, blackboard)
+		var response = c.tick(actor, blackboard)
 
 		if c is ConditionLeaf:
 			blackboard.set("last_condition", c)

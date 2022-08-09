@@ -14,6 +14,6 @@ func tick(actor, blackboard):
 
 	if current_count <= max_count:
 		blackboard.set(cache_key, current_count + 1)
-		return self.get_child(0)._tick(actor, blackboard)
+		return self.get_child(0).tick(actor, blackboard)
 	else:
 		return FAILED

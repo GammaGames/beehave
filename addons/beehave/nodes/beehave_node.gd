@@ -7,11 +7,11 @@ enum { SUCCESS, FAILURE, RUNNING }
 signal tick_start(node)
 signal tick_end(node, status)
 
-func _tick(actor, blackboard):
+func tick(actor, blackboard):
 	emit_signal("tick_start", self)
 	var result = self.tick(actor, blackboard)
 	emit_signal("tick_end", self, result)
 	return result
 
-func tick(actor, blackboard):
+func _tick(actor, blackboard):
 	pass
