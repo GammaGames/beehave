@@ -44,10 +44,12 @@ func _physics_process(delta):
 	tick(delta)
 
 func tick(delta):
+	blackboard.set("processed", [self])
 	emit_signal("tick_start", self.blackboard)
 	blackboard.set("delta", delta)
 
 	var status = self.get_child(0).tick(actor, blackboard)
+	blackboard.set(self, status)
 
 	if status != RUNNING:
 		blackboard.set("running_action", null)
